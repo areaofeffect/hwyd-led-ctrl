@@ -56,10 +56,15 @@ function setup() {
 
 
 function draw() {
-  background(30);
+  background(40);
 
-  textSize(32);
-  text("LED CTRL", 10, 40);
+  noStroke();
+  fill(30);
+  rect(0,0,width,40);
+  textSize(22);
+  fill(255);
+  text("How was your day?", 10, 30);
+
   textSize(11);
 
   // process UI elements and update values
@@ -217,7 +222,6 @@ function drawUI() {
   strokeWeight(1);
   stroke(255);
   rect(0,60,180,260);
-
 
 }
 
