@@ -31,6 +31,9 @@ var enableDrawable;
 var gifBool = false; // is enabled or not
 var drawBool = false; // is enabled or not
 
+// button
+var sendButton;
+
 function setup() {
   createCanvas(800,600);
 
@@ -155,7 +158,17 @@ function initUI() {
   gifSelect.option('stars.gif');
   gifSelect.option('psyc.gif');
   gifSelect.changed(gifEvent);
+
+  button = createButton('send to display');
+  button.position(400, 540);
+  button.mousePressed(sendToDisplay);
 }
+
+function sendToDisplay() {
+  // this is what gets sent
+  console.log(ouputBuffer.pixels);
+}
+
 
 //
 // Draw UI
