@@ -166,7 +166,7 @@ function initUI() {
 
 function sendToDisplay() {
   // this is what gets sent
-  console.log(ouputBuffer.pixels);
+  console.log(ledPixels);
 }
 
 
