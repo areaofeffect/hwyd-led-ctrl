@@ -153,13 +153,13 @@ function setupOsc(oscPortIn, oscPortOut) {
 
 function imageEvent() {
   var item = imageSelect.value();
-  testImg = loadImage(item); // Load the image
+  testImg = loadImage("/img" + item); // Load the image
   testImg.resize(160,100);
 }
 
 function gifEvent() {
   var gifItem = gifSelect.value();
-  testGif = loadGif(gifItem);
+  testGif = loadGif("/gif" + gifItem);
 }
 
 function enableGifEvent() {
