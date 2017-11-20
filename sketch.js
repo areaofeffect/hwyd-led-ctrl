@@ -121,7 +121,7 @@ function initUI() {
 
   // checkboxes
   enableGif = createCheckbox('enable gif layer');
-  enableGif.position(580, 220)
+  enableGif.position(580, 225)
   enableGif.checked(false); // passing in an arg sets its state?
   enableGif.style('color', '#FFF');
   enableGif.changed(enableGifEvent); // even for when the user does something
@@ -188,7 +188,8 @@ function drawUI() {
 
   // channel 2 controls
   fill(255);
-  text("Pick an iamge", 390, 220);
+  text("Pick an image", 390, 220);
+  text("Enable or disable gif layer", 580, 220);
   fill(127,127,127);
   rect(390,100,160,100);
   image(testImg,390,100,160,100)
