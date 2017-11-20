@@ -246,18 +246,29 @@ function calculateDownsample() {
       var g = ouputBuffer.pixels[index+1];
       var b = ouputBuffer.pixels[index+2];
 
+      // this value is the 1 demensional index in the 8 * 5 loop
+      // they should calculate sequentially 1,2,3 etc...
       var value = x + y * 8;
       
-      ledPixels[value].index = value;
-      ledPixels[value].x = 200 + x*vScale;
+      // this is our array
+      ledPixels[value].index = value; // -> this to the display
+      ledPixels[value].x = 200 + x*vScale; // vScale is the size of the blocks (20px)
       ledPixels[value].y = 400 + y*vScale;
-      ledPixels[value].display();
+      ledPixels[value].display(); // display renders downsampled pixels at their x,y location
 
-      // this is the final result
+      // TODO: add send to display method
+      // this is not written yet but should basically accept
+      // an array of values and map them to the pixels on the arduino
+      
+      // - might have to be an index,r,g,b for each pixel to have color
+      // display.render(ledPixels);
+      
       noStroke();
       
-      if (ledPixels[value].toggle) {
-        if (drawBool) {
+      // INTERACTIVE
+      // loop throught he pixels and calculate which ones are to be masked
+      if (ledPixels[value].toggle) { // if that particular pixel is toggeled
+        if (drawBool) { // is drawing mask enabled?
           fill(255,255,255,255)
         } else {
           fill(r,g,b);
@@ -266,6 +277,7 @@ function calculateDownsample() {
         fill(r,g,b);
       }
 
+      // this is the final value of the pixel (final result)
       rect(400 + x*vScale, 400 + y*vScale, 20, 20);
     }
   }
@@ -279,11 +291,11 @@ function mousePressed() {
 
 function LedPixel(x, y) {
   this.state = "off";
-  this.toggle = false;
-  this.isHover = false;
-  this.x = x;
-  this.y = y;
-  this.index = 0;
+  this.toggle = false; // have we clicked it or not
+  this.isHover = false; // the the mouse over it
+  this.x = x; // the xpositon to draw
+  this.y = y; // the yposition to draw
+  this.index = 0; // the index of the pixel
 
   this.display = function() {
     this.checkHover();
@@ -295,6 +307,7 @@ function LedPixel(x, y) {
     stroke(1);
     rect(this.x,this.y,20,20);
 
+    // show the pixel number over the tile
     fill(0,255,0)
     text(String(this.index),this.x + 5,this.y + 15);
   }
