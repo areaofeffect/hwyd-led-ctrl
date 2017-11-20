@@ -293,6 +293,9 @@ function calculateDownsample() {
       var value = x + y * 8;
       
       // this is our array
+      ledPixels[value].r = r;
+      ledPixels[value].g = g;
+      ledPixels[value].b = b;
       ledPixels[value].index = value; // -> this to the display
       ledPixels[value].x = 200 + x*vScale; // vScale is the size of the blocks (20px)
       ledPixels[value].y = 400 + y*vScale;
@@ -339,6 +342,10 @@ function LedPixel(x, y) {
   this.x = x; // the xpositon to draw
   this.y = y; // the yposition to draw
   this.index = 0; // the index of the pixel
+
+  this.r = 0;
+  this.g = 0;
+  this.b = 0;
 
   this.display = function() {
     this.checkHover();
