@@ -112,14 +112,14 @@ function initUI() {
   fSlider.style('width', '80px');
 
   // checkboxes
-  enableGif = createCheckbox('enableGif');
+  enableGif = createCheckbox('enable gif layer');
   enableGif.position(580, 220)
   enableGif.checked(false); // passing in an arg sets its state?
   enableGif.style('color', '#FFF');
   enableGif.changed(enableGifEvent); // even for when the user does something
 
   // checkboxes
-  enableGif = createCheckbox('enableDrawable');
+  enableGif = createCheckbox('enable interactive layer');
   enableGif.position(200, 530)
   enableGif.checked(false); // passing in an arg sets its state?
   enableGif.style('color', '#FFF');
@@ -163,21 +163,21 @@ function drawUI() {
   text("red (" + str(h) + ")", 100, 245);
   text("green (" + str(s) + ")", 100, 265);
   text("blue (" + str(b) + ")", 100, 285);
-  text("channel 1 (HSB)", 10, 220);
+  text("Pick a color", 10, 220);
 
   fill(h,s,b);
   rect(10,100,160,100);
 
   // channel 2 controls
   fill(255);
-  text("channel 2 (image picker)", 390, 220);
+  text("Pick an iamge", 390, 220);
   fill(127,127,127);
   rect(390,100,160,100);
   image(testImg,390,100,160,100)
 
   // output controls
   fill(255);
-  text("mix preview (ch1 + ch2)", 200, 220);
+  text("Crossfade IMAGE / COLOR", 200, 220);
   fill(127,127,127);
   rect(200,100,160,100);
   image(testImg,200,100,160,100);
@@ -186,17 +186,17 @@ function drawUI() {
   rect(200,100,160,100);
 
   fill(255,255,0); // yellow
-  text("color mixer", 10, 80);
-  text("image mixer", 390, 80);
-  text("gif animation", 580, 80);
-  text("buffer preview", 10, 380);
-  text("interactive", 200, 380);
-  text("final result", 400, 380);
+  text("1. COLOR", 10, 80);
+  text("2. IMAGE PICKER", 390, 80);
+  text("3. GIF ANIMATION", 580, 80);
+  text("OUTPUT PREVIEW (1+2+3)", 10, 380);
+  text("4. INTERACTIVE", 200, 380);
+  text("5. FINAL LED RESULT", 400, 380);
 
   fill(255); // white
-  text("drawable", 200, 520);
-  text("frame buffer", 10, 520);
-  text("LED downsample", 400, 520);
+  text("click to toggle pixels", 200, 520);
+  text("combined layers buffer", 10, 520);
+  text("This is mapped to display.", 400, 520);
 
   image(testGif, 580, 100, 160,100);
   image(ouputBuffer, 10, 400);
