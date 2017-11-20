@@ -1,26 +1,26 @@
-// display size
-var gridWidth = 8;
-var gridHeight = 5;
-
 // sliders
 var rSlider, gSlider, bSlider, fSlider; // control sliders
-var h, s, b;  // hue saturation brightness
+var h, s, b;  // hue saturation brightness (this is really rgb for testing but should be changed to HSB)
 var faderVal; // fader Channel 1 and Channel 2
 
 // dropdowns
 var imageSelect;
 var gifSelect;
 
-// image
+// preview images
 var testImg;
 var testGif;
 var imageMask;
 
 // buffers
-var ouputBuffer;
+var ouputBuffer; // fbo to mix frames and images
+
+// display size
+var gridWidth = 8;
+var gridHeight = 5;
 
 // scale
-var vScale = 20;
+var vScale = 20; // the downsampled pixels
 
 // display array -> can be sent to hardware
 var ledPixels = [];
@@ -28,18 +28,74 @@ var ledPixels = [];
 // checkboxes
 var enableGif;
 var enableDrawable;
-var gifBool = false;
-var drawBool = false;
-
-// socket
-var socket;
+var gifBool = false; // is enabled or not
+var drawBool = false; // is enabled or not
 
 function setup() {
   createCanvas(800,600);
 
+  // create the UI
+  initUI();
+
+  // default images
   testImg = loadImage("/img/gradient.png"); // Load the image 
   testGif = loadGif('/gif/material_gradient.gif');
 
+  // buffers
+  ouputBuffer = createGraphics(160,100);
+  ouputBuffer.pixelDensity(1); // to support retina display
+  //ouputBuffer.scale(1/4);
+
+  // create the pixel objects
+  for (var y = 0; y < 5; y++) {
+    for (var x = 0; x < 8; x++) {
+      ledPixels.push(new LedPixel(x,y));
+    }
+  }
+}
+
+
+function draw() {
+  background(30);
+
+  textSize(32);
+  text("LED CTRL", 10, 40);
+  textSize(11);
+
+  // process UI elements and update values
+  h = rSlider.value();
+  s = gSlider.value();
+  b = bSlider.value();
+  faderVal = fSlider.value();
+  
+  // this is the frame buffer, the point of it is to preview the output
+  // kinda like an FBO. It is a tad slow though.
+  // this is important because we can apply blendings and such here
+  ouputBuffer.background(0);
+  ouputBuffer.noStroke();
+  ouputBuffer.tint(h,s,b, faderVal); // does this make sense?
+  ouputBuffer.rect(0,0,160,100);
+  ouputBuffer.image(testImg,0,0, 160, 100);
+  ouputBuffer.fill(h,s,b, 255-faderVal);
+  ouputBuffer.rect(0,0,160,100);
+
+  // if gif is enabled draw that to the output buffer too
+  if(gifBool){
+    if (testGif.loaded()) {
+      ouputBuffer.image(testGif,0,0, 160, 100);
+    }
+  }
+
+  calculateDownsample();
+
+  drawUI();
+
+}
+
+//
+// initUI
+//
+function initUI() {
   rSlider = createSlider(0, 255, 255);
   gSlider = createSlider(0, 255, 255);
   bSlider = createSlider(0, 255, 255);
@@ -70,12 +126,6 @@ function setup() {
   enableGif.checked(false); // passing in an arg sets its state?
   enableGif.style('color', '#FFF');
   enableGif.changed(enableDrawableEvent); // even for when the user does something
-  
-
-  // buffers
-  ouputBuffer = createGraphics(160,100);
-  ouputBuffer.pixelDensity(1); // to support retina display
-  //ouputBuffer.scale(1/4);
 
   // dropdown
   imageSelect = createSelect();
@@ -102,52 +152,13 @@ function setup() {
   gifSelect.option('stars.gif');
   gifSelect.option('psyc.gif');
   gifSelect.changed(gifEvent);
-
-  updateFromUI();
-
-  for (var y = 0; y < 5; y++) {
-    for (var x = 0; x < 8; x++) {
-      ledPixels.push(new LedPixel(x,y));
-    }
-  }
 }
+//
+// UI
+//
+function drawUI() {
 
-function imageEvent() {
-  var item = imageSelect.value();
-  testImg = loadImage("/img/" + item); // Load the image
-  testImg.resize(160,100);
-}
-
-function gifEvent() {
-  var gifItem = gifSelect.value();
-  testGif = loadGif("/gif/" + gifItem);
-}
-
-function enableGifEvent() {
-  testGif.pause();
-  gifBool = !gifBool;
-
-  if (gifBool) {
-    testGif.play();
-  } else {
-    testGif.pause();
-  }
-}
-
-function enableDrawableEvent() {
-  drawBool = !drawBool;
-}
-
-function draw() {
-  background(30);
-
-  textSize(32);
-  text("LED CTRL", 10, 40);
-
-  textSize(11);
-
-  updateFromUI();
-
+  // temporary UI and text controls
   // channel 1 controls
   fill(255);
   text("red (" + str(h) + ")", 100, 245);
@@ -174,28 +185,6 @@ function draw() {
 
   fill(h,s,b, 255-faderVal); // this could be better
   rect(200,100,160,100);
-
-  fill(255);
-  text("ch2", 315, 245);
-  text("ch1", 200, 245);
-  text("fader", 250, 260);
-  
-  // draw to buffers
-  ouputBuffer.background(0);
-  ouputBuffer.noStroke();
-  ouputBuffer.tint(h,s,b, faderVal); // does this make sense?
-  ouputBuffer.rect(0,0,160,100);
-  ouputBuffer.image(testImg,0,0, 160, 100);
-  ouputBuffer.fill(h,s,b, 255-faderVal);
-  ouputBuffer.rect(0,0,160,100);
-
-  if(gifBool){
-    if (testGif.loaded()) {
-      ouputBuffer.image(testGif,0,0, 160, 100);
-    }
-  }
-
-  calculateDownsample();
 
   fill(255);
   text("frame buffer", 10, 520);
@@ -226,14 +215,40 @@ function draw() {
       text("loading gif",60, 460);
     }
   }
+
+  fill(255);
+  text("ch2", 315, 245);
+  text("ch1", 200, 245);
+  text("fader", 250, 260);
 }
 
-function updateFromUI() {
-  // process UI elements and update values
-  h = rSlider.value();
-  s = gSlider.value();
-  b = bSlider.value();
-  faderVal = fSlider.value();
+//
+// UI EVENTS
+//
+function imageEvent() {
+  var item = imageSelect.value();
+  testImg = loadImage("/img/" + item); // Load the image
+  testImg.resize(160,100);
+}
+
+function gifEvent() {
+  var gifItem = gifSelect.value();
+  testGif = loadGif("/gif/" + gifItem);
+}
+
+function enableGifEvent() {
+  testGif.pause();
+  gifBool = !gifBool;
+
+  if (gifBool) {
+    testGif.play();
+  } else {
+    testGif.pause();
+  }
+}
+
+function enableDrawableEvent() {
+  drawBool = !drawBool;
 }
 
 function calculateDownsample() {
@@ -259,7 +274,7 @@ function calculateDownsample() {
       // TODO: add send to display method
       // this is not written yet but should basically accept
       // an array of values and map them to the pixels on the arduino
-      
+
       // - might have to be an index,r,g,b for each pixel to have color
       // display.render(ledPixels);
       
