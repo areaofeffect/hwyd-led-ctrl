@@ -112,7 +112,6 @@ function initUI() {
   fSlider.style('width', '80px');
 
   // checkboxes
-  fill(255);
   enableGif = createCheckbox('enableGif');
   enableGif.position(580, 220)
   enableGif.checked(false); // passing in an arg sets its state?
@@ -120,7 +119,6 @@ function initUI() {
   enableGif.changed(enableGifEvent); // even for when the user does something
 
   // checkboxes
-  fill(255);
   enableGif = createCheckbox('enableDrawable');
   enableGif.position(200, 530)
   enableGif.checked(false); // passing in an arg sets its state?
@@ -153,8 +151,9 @@ function initUI() {
   gifSelect.option('psyc.gif');
   gifSelect.changed(gifEvent);
 }
+
 //
-// UI
+// Draw UI
 //
 function drawUI() {
 
@@ -186,26 +185,18 @@ function drawUI() {
   fill(h,s,b, 255-faderVal); // this could be better
   rect(200,100,160,100);
 
-  fill(255);
-  text("frame buffer", 10, 520);
-  text("LED downsample", 400, 520);
-
-  // labels
-  fill(255,255,0);
+  fill(255,255,0); // yellow
   text("color mixer", 10, 80);
-  
-  fill(255,255,0);
   text("image mixer", 390, 80);
-  
-  // labels
-  fill(255,255,0);
   text("gif animation", 580, 80);
   text("buffer preview", 10, 380);
   text("interactive", 200, 380);
   text("final result", 400, 380);
 
-  fill(255);
+  fill(255); // white
   text("drawable", 200, 520);
+  text("frame buffer", 10, 520);
+  text("LED downsample", 400, 520);
 
   image(testGif, 580, 100, 160,100);
   image(ouputBuffer, 10, 400);
@@ -220,23 +211,34 @@ function drawUI() {
   text("ch2", 315, 245);
   text("ch1", 200, 245);
   text("fader", 250, 260);
+
+  // ui frames
+  noFill();
+  strokeWeight(1);
+  stroke(255);
+  rect(0,60,180,260);
+
+
 }
 
 //
-// UI EVENTS
+// UI EVENTS - these are triggered from the UI
 //
-function imageEvent() {
+function imageEvent() { 
+  // triggered when that dropdown changes
   var item = imageSelect.value();
   testImg = loadImage("/img/" + item); // Load the image
   testImg.resize(160,100);
 }
 
 function gifEvent() {
+  // triggered when that dropdown changes
   var gifItem = gifSelect.value();
   testGif = loadGif("/gif/" + gifItem);
 }
 
 function enableGifEvent() {
+  // triggered when the checkbox changes
   testGif.pause();
   gifBool = !gifBool;
 
@@ -248,12 +250,17 @@ function enableGifEvent() {
 }
 
 function enableDrawableEvent() {
+  // triggered when the checkbox changes
   drawBool = !drawBool;
 }
 
 function calculateDownsample() {
-  ouputBuffer.loadPixels();
+  // takes the pixels from the output buffer
+  // and downsamples them to be displayed on our LED matrix
 
+  ouputBuffer.loadPixels(); // load the pixels
+
+  // loop through
   for (var x = 0; x < 8; x++) {
     for (var y = 0; y < 5; y++) {
       var index = (x*vScale + 1 + (y*vScale * 160))*4;
@@ -299,6 +306,7 @@ function calculateDownsample() {
 }
 
 function mousePressed() {
+  // for the interactive panel. this sets drawable pixels on and off
   for (var x = 0; x < ledPixels.length; x++) {
     ledPixels[x].clicked();
   }
