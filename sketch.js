@@ -4,7 +4,7 @@ var gridHeight = 5;
 
 // sliders
 var rSlider, gSlider, bSlider, fSlider; // control sliders
-var h, s, b; // hue saturation brightness
+var h, s, b;  // hue saturation brightness
 var faderVal; // fader Channel 1 and Channel 2
 
 // dropdowns
@@ -22,13 +22,10 @@ var ouputBuffer;
 // scale
 var vScale = 20;
 
-// display
+// display array -> can be sent to hardware
 var ledPixels = [];
 
-// gif
-var testGif;
-
-// checkbox
+// checkboxes
 var enableGif;
 var enableDrawable;
 var gifBool = false;
@@ -39,13 +36,9 @@ var socket;
 
 function setup() {
   createCanvas(800,600);
-  setupOsc(12000, 3334);
 
-  testImg = loadImage("/img/gradient.png"); // Load the image
-  //imageMask = loadImage("/img/half.png")
- 
-  testGif = loadGif('material_gradient.gif');
-
+  testImg = loadImage("/img/gradient.png"); // Load the image 
+  testGif = loadGif('/gif/material_gradient.gif');
 
   rSlider = createSlider(0, 255, 255);
   gSlider = createSlider(0, 255, 255);
@@ -81,7 +74,7 @@ function setup() {
 
   // buffers
   ouputBuffer = createGraphics(160,100);
-  ouputBuffer.pixelDensity(1);
+  ouputBuffer.pixelDensity(1); // to support retina display
   //ouputBuffer.scale(1/4);
 
   // dropdown
@@ -93,8 +86,6 @@ function setup() {
   imageSelect.option('tiger.jpg');
   imageSelect.option('tanook.jpg');
   imageSelect.option('half.png');
-  //imageSelect.option('colors1.gif');
-  //imageSelect.option('colors2.gif');
   imageSelect.changed(imageEvent);
 
   // dropdown
@@ -110,8 +101,6 @@ function setup() {
   gifSelect.option('night2.gif');
   gifSelect.option('stars.gif');
   gifSelect.option('psyc.gif');
-  //imageSelect.option('colors1.gif');
-  //imageSelect.option('colors2.gif');
   gifSelect.changed(gifEvent);
 
   updateFromUI();
@@ -121,61 +110,32 @@ function setup() {
       ledPixels.push(new LedPixel(x,y));
     }
   }
-
-
-  
-}
-
-
-function sendOsc(address, value) {
-  socket.emit('message', [address].concat(value));
-}
-
-
-function setupOsc(oscPortIn, oscPortOut) {
-  socket = io.connect('http://127.0.0.1:8081', { port: 8081, rememberTransport: false });
-  socket.on('connect', function() {
-    socket.emit('config', { 
-      server: { port: oscPortIn,  host: '127.0.0.1'},
-      client: { port: oscPortOut, host: '127.0.0.1'}
-    });
-  });
-  socket.on('message', function(msg) {
-    if (msg[0] == '#bundle') {
-      for (var i=2; i<msg.length; i++) {
-        receiveOsc(msg[i][0], msg[i].splice(1));
-      }
-    } else {
-      receiveOsc(msg[0], msg.splice(1));
-    }
-  });
 }
 
 function imageEvent() {
   var item = imageSelect.value();
-  testImg = loadImage("/img" + item); // Load the image
+  testImg = loadImage("/img/" + item); // Load the image
   testImg.resize(160,100);
 }
 
 function gifEvent() {
   var gifItem = gifSelect.value();
-  testGif = loadGif("/gif" + gifItem);
+  testGif = loadGif("/gif/" + gifItem);
 }
 
 function enableGifEvent() {
   testGif.pause();
-
   gifBool = !gifBool;
 
-  if (gifBool)
+  if (gifBool) {
     testGif.play();
-  else
+  } else {
     testGif.pause();
+  }
 }
 
 function enableDrawableEvent() {
   drawBool = !drawBool;
-
 }
 
 function draw() {
@@ -183,9 +143,9 @@ function draw() {
 
   textSize(32);
   text("LED CTRL", 10, 40);
+
   textSize(11);
 
-  //background(h, s, b);
   updateFromUI();
 
   // channel 1 controls
@@ -201,7 +161,6 @@ function draw() {
   // channel 2 controls
   fill(255);
   text("channel 2 (image picker)", 390, 220);
-
   fill(127,127,127);
   rect(390,100,160,100);
   image(testImg,390,100,160,100)
@@ -209,7 +168,6 @@ function draw() {
   // output controls
   fill(255);
   text("mix preview (ch1 + ch2)", 200, 220);
-
   fill(127,127,127);
   rect(200,100,160,100);
   image(testImg,200,100,160,100);
@@ -226,19 +184,15 @@ function draw() {
   ouputBuffer.background(0);
   ouputBuffer.noStroke();
   ouputBuffer.tint(h,s,b, faderVal); // does this make sense?
-
   ouputBuffer.rect(0,0,160,100);
   ouputBuffer.image(testImg,0,0, 160, 100);
-
   ouputBuffer.fill(h,s,b, 255-faderVal);
   ouputBuffer.rect(0,0,160,100);
 
   if(gifBool){
-    
     if (testGif.loaded()) {
       ouputBuffer.image(testGif,0,0, 160, 100);
     }
-
   }
 
   calculateDownsample();
@@ -257,37 +211,21 @@ function draw() {
   // labels
   fill(255,255,0);
   text("gif animation", 580, 80);
-
-  fill(255,255,0);
   text("buffer preview", 10, 380);
-
-  fill(255,255,0);
   text("interactive", 200, 380);
-
-  fill(255,255,0);
   text("final result", 400, 380);
 
   fill(255);
   text("drawable", 200, 520);
 
-  //testImg.mask(imageMask);
   image(testGif, 580, 100, 160,100);
-
   image(ouputBuffer, 10, 400);
-  //console.log(frameRate());
-
 
   if(gifBool){
-    
     if (!testGif.loaded()) {
       text("loading gif",60, 460);
     }
-
   }
-
-  sendOsc("/test", "yo")
-
-
 }
 
 function updateFromUI() {
@@ -299,9 +237,8 @@ function updateFromUI() {
 }
 
 function calculateDownsample() {
-
   ouputBuffer.loadPixels();
-  //loadPixels();
+
   for (var x = 0; x < 8; x++) {
     for (var y = 0; y < 5; y++) {
       var index = (x*vScale + 1 + (y*vScale * 160))*4;
@@ -322,30 +259,25 @@ function calculateDownsample() {
       if (ledPixels[value].toggle) {
         if (drawBool) {
           fill(255,255,255,255)
-        }else {
-        fill(r,g,b);
-      }
+        } else {
+          fill(r,g,b);
+        }
       } else {
         fill(r,g,b);
       }
-      rect(400 + x*vScale, 400 + y*vScale, 20, 20);
 
+      rect(400 + x*vScale, 400 + y*vScale, 20, 20);
     }
   }
-
-
 }
 
 function mousePressed() {
-
   for (var x = 0; x < ledPixels.length; x++) {
     ledPixels[x].clicked();
   }
-
 }
 
 function LedPixel(x, y) {
-
   this.state = "off";
   this.toggle = false;
   this.isHover = false;
@@ -354,40 +286,34 @@ function LedPixel(x, y) {
   this.index = 0;
 
   this.display = function() {
-
     this.checkHover();
 
     if (this.toggle) {
       fill(255);
     } 
-    stroke(1);
 
+    stroke(1);
     rect(this.x,this.y,20,20);
 
     fill(0,255,0)
     text(String(this.index),this.x + 5,this.y + 15);
-
   }
 
   this.checkHover = function() {
-
     if (mouseX > this.x && mouseX <= this.x + 20) {
       if (mouseY > this.y && mouseY <= this.y + 20) {
-
         this.isHover = true;
         fill(200);
-
       }
       else {
-      this.isHover = false;
-      fill(120);
+        this.isHover = false;
+        fill(120);
       }
     } 
     else {
       this.isHover = false;
       fill(120);
     }
-
   }
 
   this.clicked = function() {
@@ -399,5 +325,4 @@ function LedPixel(x, y) {
       }
     }
   }
-
 };
