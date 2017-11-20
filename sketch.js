@@ -41,8 +41,8 @@ function setup() {
   createCanvas(800,600);
   setupOsc(12000, 3334);
 
-  testImg = loadImage("gradient.png"); // Load the image
-  imageMask = loadImage("half.png")
+  testImg = loadImage("/img/gradient.png"); // Load the image
+  //imageMask = loadImage("/img/half.png")
  
   testGif = loadGif('material_gradient.gif');
 
